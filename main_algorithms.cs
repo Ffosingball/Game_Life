@@ -7,20 +7,20 @@ using UnityEngine;
 
 public class main_algorithms : MonoBehaviour
 {
-    public static int width = 201;
-    public static int height = 201;
+    public int width = 201;
+    public int height = 201;
     public GameObject Square;
-    public static GameObject[,] grid_of_square;
+    public static square_des[,] grid_of_square;
     public static int[,] grid;
-    public static bool IsUpdate = true;
     private static bool Cont_inue = false;
+    public uiManager uimanager;
 
 
 
 
     private void Awake()
     {
-        grid_of_square = new GameObject[width, height];
+        grid_of_square = new square_des[width, height];
         grid = new int[width, height];
 
         for (int i = 0; i<width; i++)
@@ -28,7 +28,12 @@ public class main_algorithms : MonoBehaviour
             for (int j = 0; j<height; j++)
             {
                 Vector3 position = new Vector3(-((width/2)-1)+i,((height/2)-1)-j,91);
-                grid_of_square[i, j] = Instantiate(Square, position, Quaternion.identity);
+                GameObject newObj = Instantiate(Square, position, Quaternion.identity);
+                square_des newSquare = newObj.GetComponent<square_des>();
+                newSquare.uimanager = uimanager;
+                newSquare.x_coord = i;
+                newSquare.y_coord = j;
+                grid_of_square[i, j] = newSquare;
             }
         }
     }
@@ -37,7 +42,7 @@ public class main_algorithms : MonoBehaviour
 
 
 
-    static int proverca(int c, int coord) 
+    static int proverca(int c, int coord, int x, int y) 
         {
 
             if (coord == 1 && (c == 2 || c == 3))
@@ -56,6 +61,8 @@ public class main_algorithms : MonoBehaviour
             {
                 coord = 0;
             }
+            
+            grid_of_square[x,y].changeState(coord);
 
             return coord;
         }
@@ -67,9 +74,7 @@ public class main_algorithms : MonoBehaviour
 
     private void NextStep()
     {
-    IsUpdate=false;
-
-    int[,] grid_2 = new int[width, height];
+        int[,] grid_2 = new int[width, height];
 
         for (int y = 0; y < height; y++)
         {
@@ -90,7 +95,7 @@ public class main_algorithms : MonoBehaviour
                             c++;
 
                         coord = grid[x, y];
-                        grid_2[x, y] = proverca(c, coord);
+                        grid_2[x, y] = proverca(c, coord, x, y);
                     }
                     else if (x == width-1)
                     {
@@ -104,7 +109,7 @@ public class main_algorithms : MonoBehaviour
                             c++;
 
                         coord = grid[x, y];
-                        grid_2[x, y] = proverca(c, coord);
+                        grid_2[x, y] = proverca(c, coord, x, y);
                     }
                     else
                     {
@@ -122,7 +127,7 @@ public class main_algorithms : MonoBehaviour
                             c++;
 
                         coord = grid[x, y];
-                        grid_2[x, y] = proverca(c, coord);
+                        grid_2[x, y] = proverca(c, coord, x, y);
                     }
                 }
 
@@ -143,7 +148,7 @@ public class main_algorithms : MonoBehaviour
                             c++;
 
                         coord = grid[x, y];
-                        grid_2[x, y] = proverca(c, coord);
+                        grid_2[x, y] = proverca(c, coord, x, y);
                     }
                     else if (x == width-1)
                     {
@@ -157,7 +162,7 @@ public class main_algorithms : MonoBehaviour
                             c++;
 
                         coord = grid[x, y];
-                        grid_2[x, y] = proverca(c, coord);
+                        grid_2[x, y] = proverca(c, coord, x, y);
                     }
                     else
                     {
@@ -175,7 +180,7 @@ public class main_algorithms : MonoBehaviour
                             c++;
 
                         coord = grid[x, y];
-                        grid_2[x, y] = proverca(c, coord);
+                        grid_2[x, y] = proverca(c, coord, x, y);
                     }
                 }
             }
@@ -199,7 +204,7 @@ public class main_algorithms : MonoBehaviour
                             c++;
 
                         coord = grid[x, y];
-                        grid_2[x, y] = proverca(c, coord);
+                        grid_2[x, y] = proverca(c, coord, x, y);
                     }
                     else if (x == width-1)
                     {
@@ -217,7 +222,7 @@ public class main_algorithms : MonoBehaviour
                             c++;
 
                         coord = grid[x, y];
-                        grid_2[x, y] = proverca(c, coord);
+                        grid_2[x, y] = proverca(c, coord, x, y);
                     }
                     else
                     {
@@ -241,15 +246,13 @@ public class main_algorithms : MonoBehaviour
                             c++;
 
                         coord = grid[x, y];
-                        grid_2[x,y]=proverca(c, coord);
+                        grid_2[x,y]=proverca(c, coord, x, y);
                     }
                 }
             }
         }
 
         grid = grid_2;
-
-        IsUpdate=true;
     }
 
 
