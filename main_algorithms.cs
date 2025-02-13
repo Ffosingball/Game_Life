@@ -10,247 +10,474 @@ public class main_algorithms : MonoBehaviour
     public int width = 201;
     public int height = 201;
     public GameObject Square;
-    public static square_des[,] grid_of_square;
-    public static int[,] grid;
+    public Dictionary<(int,int),square_des> gridSquares;
+    public Dictionary<(int,int),bool> grid;
     private static bool Cont_inue = false;
     public uiManager uimanager;
 
 
+    void Awake(){
+        gridSquares = new Dictionary<(int,int),square_des>();
+        grid = new Dictionary<(int,int),bool>();
+    }
 
 
-    private void Awake()
+    private bool proverca(int c, bool coord, int x, int y) 
     {
-        grid_of_square = new square_des[width, height];
-        grid = new int[width, height];
-
-        for (int i = 0; i<width; i++)
+        if (coord && (c == 2 || c == 3))
         {
-            for (int j = 0; j<height; j++)
-            {
-                Vector3 position = new Vector3(-((width/2)-1)+i,((height/2)-1)-j,91);
-                GameObject newObj = Instantiate(Square, position, Quaternion.identity);
-                square_des newSquare = newObj.GetComponent<square_des>();
-                newSquare.uimanager = uimanager;
-                newSquare.x_coord = i;
-                newSquare.y_coord = j;
-                grid_of_square[i, j] = newSquare;
-            }
+            coord = true;
         }
+        else if (coord)
+        {
+            coord = false;
+        }
+        else if (!coord && c == 3)
+        {
+            coord = true;
+        }
+        else
+        {
+            coord = false;
+        }
+
+        //Debug.Log("c: "+c+"; coord: "+coord+"; x: "+x+"; y: "+y);
+        
+        if(coord && !gridSquares.ContainsKey((x, y)))
+            createACell(x,y, 0);
+        else if(!coord && gridSquares.ContainsKey((x, y)))
+            gridSquares[(x,y)].destroyItself(1);
+        
+        return coord;
+    }
+
+
+    public void createACell(int x, int y, int g)
+    {
+        GameObject newObj = Instantiate(Square, new Vector3Int(x,y,91), Quaternion.identity);
+        square_des newSquare = newObj.GetComponent<square_des>();
+        newSquare.uimanager = uimanager;
+        newSquare.algorithm = this;
+        newSquare.x_coord = x;
+        newSquare.y_coord = y;
+        gridSquares[(x, y)] = newSquare;
+        
+        if(g==1)
+            grid[(x,y)] = true;
     }
 
 
 
-
-
-    static int proverca(int c, int coord, int x, int y) 
-        {
-
-            if (coord == 1 && (c == 2 || c == 3))
-            {
-                coord = 1;
-            }
-            else if (coord == 1)
-            {
-                coord = 0;
-            }
-            else if (coord == 0 && c == 3)
-            {
-                coord = 1;
-            }
-            else
-            {
-                coord = 0;
-            }
-            
-            grid_of_square[x,y].changeState(coord);
-
-            return coord;
-        }
-
-
-
-
-
-
-    private void NextStep()
+    public void NextStep()
     {
-        int[,] grid_2 = new int[width, height];
+        Dictionary<(int,int),bool> grid_2 = new Dictionary<(int,int),bool>();
+        Dictionary<(int,int),bool> grid_neighbours = new Dictionary<(int,int),bool>();
+        //Debug.Log("Step");
 
-        for (int y = 0; y < height; y++)
+        foreach (var kvp in grid)
         {
-            if (y==0)
+            (int x, int y) = kvp.Key;
+            //Debug.Log(x+"; "+y);
+            if (y<-height/2)
             {
+                int c = 0;
+                bool coord;
 
-                for (int x = 0; x < width; x++)
+                if (x < -width/2)
                 {
-                    if (x == 0)
-                    {
-                        int c = 0, coord;
-
-                        if (grid[x, y + 1] == 1)
-                            c++;
-                        if (grid[x + 1, y + 1] == 1)
-                            c++;
-                        if (grid[x + 1, y] == 1)
-                            c++;
-
-                        coord = grid[x, y];
-                        grid_2[x, y] = proverca(c, coord, x, y);
-                    }
-                    else if (x == width-1)
-                    {
-                        int c = 0, coord;
-
-                        if (grid[x - 1, y + 1] == 1)
-                            c++;
-                        if (grid[x, y + 1] == 1)
-                            c++;
-                        if (grid[x - 1, y] == 1)
-                            c++;
-
-                        coord = grid[x, y];
-                        grid_2[x, y] = proverca(c, coord, x, y);
-                    }
+                    if (grid.ContainsKey((x, y+1)))
+                        c++;
                     else
-                    {
-                        int c = 0, coord;
+                        grid_neighbours[(x,y+1)]=false;
 
-                        if (grid[x - 1, y + 1] == 1)
-                            c++;
-                        if (grid[x, y + 1] == 1)
-                            c++;
-                        if (grid[x + 1, y + 1] == 1)
-                            c++;
-                        if (grid[x - 1, y] == 1)
-                            c++;
-                        if (grid[x + 1, y] == 1)
-                            c++;
+                    if (grid.ContainsKey((x+1, y+1)))
+                        c++;
+                    else
+                        grid_neighbours[(x+1,y+1)]=false;
 
-                        coord = grid[x, y];
-                        grid_2[x, y] = proverca(c, coord, x, y);
-                    }
+                    if (grid.ContainsKey((x+1, y)))
+                        c++;
+                    else
+                        grid_neighbours[(x+1,y)]=false;
                 }
+                else if (x > width/2)
+                {
+                    if (grid.ContainsKey((x-1, y+1)))
+                        c++;
+                    else
+                        grid_neighbours[(x-1,y+1)]=false;
+
+                    if (grid.ContainsKey((x, y+1)))
+                        c++;
+                    else
+                        grid_neighbours[(x,y+1)]=false;
+
+                    if (grid.ContainsKey((x-1, y)))
+                        c++;
+                    else
+                        grid_neighbours[(x-1,y)]=false;
+                }
+                else
+                {
+                    if (grid.ContainsKey((x-1, y+1)))
+                        c++;
+                    else
+                        grid_neighbours[(x-1,y+1)]=false;
+
+                    if (grid.ContainsKey((x, y+1)))
+                        c++;
+                    else
+                        grid_neighbours[(x,y+1)]=false;
+
+                    if (grid.ContainsKey((x+1, y+1)))
+                        c++;
+                    else
+                        grid_neighbours[(x+1,y+1)]=false;
+
+                    if (grid.ContainsKey((x-1, y)))
+                        c++;
+                    else
+                        grid_neighbours[(x-1,y)]=false;
+
+                    if (grid.ContainsKey((x+1, y)))
+                        c++;
+                    else
+                        grid_neighbours[(x+1,y)]=false;
+                }
+                    
+                coord = kvp.Value;
+                if(proverca(c, coord, x, y))
+                    grid_2[(x, y)] = true;
 
             }
-            else if (y==height-1)
+            else if (y>height/2)
             {
-                for (int x = 0; x < width; x++)
+                int c = 0;
+                bool coord;
+
+                if (x < -width/2)
                 {
-                    if (x == 0)
-                    {
-                        int c = 0, coord;
-
-                        if (grid[x, y - 1] == 1)
-                            c++;
-                        if (grid[x + 1, y - 1] == 1)
-                            c++;
-                        if (grid[x + 1, y] == 1)
-                            c++;
-
-                        coord = grid[x, y];
-                        grid_2[x, y] = proverca(c, coord, x, y);
-                    }
-                    else if (x == width-1)
-                    {
-                        int c = 0, coord;
-
-                        if (grid[x - 1, y - 1] == 1)
-                            c++;
-                        if (grid[x, y - 1] == 1)
-                            c++;
-                        if (grid[x - 1, y] == 1)
-                            c++;
-
-                        coord = grid[x, y];
-                        grid_2[x, y] = proverca(c, coord, x, y);
-                    }
+                    if (grid.ContainsKey((x, y-1)))
+                        c++;
                     else
-                    {
-                        int c = 0, coord;
+                        grid_neighbours[(x,y-1)]=false;
 
-                        if (grid[x - 1, y - 1] == 1)
-                            c++;
-                        if (grid[x, y - 1] == 1)
-                            c++;
-                        if (grid[x + 1, y - 1] == 1)
-                            c++;
-                        if (grid[x - 1, y] == 1)
-                            c++;
-                        if (grid[x + 1, y] == 1)
-                            c++;
+                    if (grid.ContainsKey((x+1, y-1)))
+                        c++;
+                    else
+                        grid_neighbours[(x+1,y-1)]=false;
 
-                        coord = grid[x, y];
-                        grid_2[x, y] = proverca(c, coord, x, y);
-                    }
+                    if (grid.ContainsKey((x+1, y)))
+                        c++;
+                    else
+                        grid_neighbours[(x+1,y)]=false;
                 }
+                else if (x > width/2)
+                {
+                    if (grid.ContainsKey((x-1, y-1)))
+                        c++;
+                    else
+                        grid_neighbours[(x-1,y-1)]=false;
+
+                    if (grid.ContainsKey((x, y-1)))
+                        c++;
+                    else
+                        grid_neighbours[(x,y-1)]=false;
+
+                    if (grid.ContainsKey((x-1, y)))
+                        c++;
+                    else
+                        grid_neighbours[(x-1,y)]=false;
+                }
+                else
+                {
+                    if (grid.ContainsKey((x-1, y-1)))
+                        c++;
+                    else
+                        grid_neighbours[(x-1,y-1)]=false;
+
+                    if (grid.ContainsKey((x, y-1)))
+                        c++;
+                    else
+                        grid_neighbours[(x,y-1)]=false;
+
+                    if (grid.ContainsKey((x+1, y-1)))
+                        c++;
+                    else
+                        grid_neighbours[(x+1,y-1)]=false;
+
+                    if (grid.ContainsKey((x-1, y)))
+                        c++;
+                    else
+                        grid_neighbours[(x-1,y)]=false;
+
+                    if (grid.ContainsKey((x+1, y)))
+                        c++;
+                    else
+                        grid_neighbours[(x+1,y)]=false;
+                }
+
+                coord = kvp.Value;
+                if(proverca(c, coord, x, y))
+                    grid_2[(x, y)] = true;
             }
             else
             {
-                for (int x = 0; x < width; x++)
+                int c = 0;
+                bool coord;
+
+                if (x < -width/2)
                 {
-                    if (x == 0)
-                    {
-                        int c = 0, coord;
-
-                        if (grid[x, y - 1] == 1)
-                            c++;
-                        if (grid[x + 1, y - 1] == 1)
-                            c++;
-                        if (grid[x, y + 1] == 1)
-                            c++;
-                        if (grid[x + 1, y + 1] == 1)
-                            c++;
-                        if (grid[x + 1, y] == 1)
-                            c++;
-
-                        coord = grid[x, y];
-                        grid_2[x, y] = proverca(c, coord, x, y);
-                    }
-                    else if (x == width-1)
-                    {
-                        int c = 0, coord;
-
-                        if (grid[x - 1, y - 1] == 1)
-                            c++;
-                        if (grid[x, y - 1] == 1)
-                            c++;
-                        if (grid[x - 1, y + 1] == 1)
-                            c++;
-                        if (grid[x, y + 1] == 1)
-                            c++;
-                        if (grid[x - 1, y] == 1)
-                            c++;
-
-                        coord = grid[x, y];
-                        grid_2[x, y] = proverca(c, coord, x, y);
-                    }
+                    if (grid.ContainsKey((x, y-1)))
+                        c++;
                     else
-                    {
-                        int c = 0, coord;
+                        grid_neighbours[(x,y-1)]=false;
 
-                        if (grid[x - 1, y - 1] == 1)
-                            c++;
-                        if (grid[x, y - 1] == 1)
-                            c++;
-                        if (grid[x + 1, y - 1] == 1)
-                            c++;
-                        if (grid[x - 1, y + 1] == 1)
-                            c++;
-                        if (grid[x, y + 1] == 1)
-                            c++;
-                        if (grid[x + 1, y + 1] == 1)
-                             c++;
-                        if (grid[x - 1, y] == 1)
-                            c++;
-                        if (grid[x + 1, y] == 1)
-                            c++;
+                    if (grid.ContainsKey((x+1, y-1)))
+                        c++;
+                    else
+                        grid_neighbours[(x+1,y-1)]=false;
 
-                        coord = grid[x, y];
-                        grid_2[x,y]=proverca(c, coord, x, y);
-                    }
+                    if (grid.ContainsKey((x, y+1)))
+                        c++;
+                    else
+                        grid_neighbours[(x,y+1)]=false;
+
+                    if (grid.ContainsKey((x+1, y+1)))
+                        c++;
+                    else
+                        grid_neighbours[(x+1,y+1)]=false;
+
+                    if (grid.ContainsKey((x+1, y)))
+                        c++;
+                    else
+                        grid_neighbours[(x+1,y)]=false;
                 }
+                else if (x > width/2)
+                {
+                    if (grid.ContainsKey((x-1, y-1)))
+                        c++;
+                    else
+                        grid_neighbours[(x-1,y-1)]=false;
+
+                    if (grid.ContainsKey((x, y-1)))
+                        c++;
+                    else
+                        grid_neighbours[(x,y-1)]=false;
+
+                    if (grid.ContainsKey((x-1, y+1)))
+                        c++;
+                    else
+                        grid_neighbours[(x-1,y+1)]=false;
+
+                    if (grid.ContainsKey((x, y+1)))
+                        c++;
+                    else
+                        grid_neighbours[(x,y+1)]=false;
+
+                    if (grid.ContainsKey((x-1, y)))
+                        c++;
+                    else
+                        grid_neighbours[(x-1,y)]=false;
+                }
+                else
+                {
+                    //Debug.Log("Right");
+                    if (grid.ContainsKey((x-1, y-1)))
+                        c++;
+                    else
+                        grid_neighbours[(x-1,y-1)]=false;
+                    
+                    if (grid.ContainsKey((x, y-1)))
+                        c++;
+                    else
+                        grid_neighbours[(x,y-1)]=false;
+
+                    if (grid.ContainsKey((x+1, y-1)))
+                        c++;
+                    else
+                        grid_neighbours[(x+1,y-1)]=false;
+
+                    if (grid.ContainsKey((x-1, y+1)))
+                        c++;
+                    else
+                        grid_neighbours[(x-1,y+1)]=false;
+
+                    if (grid.ContainsKey((x, y+1)))
+                        c++;
+                    else
+                        grid_neighbours[(x,y+1)]=false;
+
+                    if (grid.ContainsKey((x+1, y+1)))
+                         c++;
+                    else
+                        grid_neighbours[(x+1,y+1)]=false;
+
+                    if (grid.ContainsKey((x-1, y)))
+                        c++;
+                    else
+                        grid_neighbours[(x-1,y)]=false;
+
+                    if (grid.ContainsKey((x+1, y)))
+                        c++;
+                    else
+                        grid_neighbours[(x+1,y)]=false;
+                }
+
+                //Debug.Log("c: "+c);
+                coord = kvp.Value;
+                if(proverca(c, coord, x, y))
+                    grid_2[(x, y)] = true;
             }
         }
+
+
+        foreach (var kvp in grid_neighbours)
+        {
+            (int x, int y) = kvp.Key;
+            //Debug.Log(x+"; "+y);
+            if (y<-height/2)
+            {
+                int c = 0;
+                bool coord;
+
+                if (x < -width/2)
+                {
+                    if (grid.ContainsKey((x, y+1)))
+                        c++;
+                    if (grid.ContainsKey((x+1, y+1)))
+                        c++;
+                    if (grid.ContainsKey((x+1, y)))
+                        c++;
+                }
+                else if (x > width/2)
+                {
+                    if (grid.ContainsKey((x-1, y+1)))
+                        c++;
+                    if (grid.ContainsKey((x, y+1)))
+                        c++;
+                    if (grid.ContainsKey((x-1, y)))
+                        c++;
+                }
+                else
+                {
+                    if (grid.ContainsKey((x-1, y+1)))
+                        c++;
+                    if (grid.ContainsKey((x, y+1)))
+                        c++;
+                    if (grid.ContainsKey((x+1, y+1)))
+                        c++;
+                    if (grid.ContainsKey((x-1, y)))
+                        c++;
+                    if (grid.ContainsKey((x+1, y)))
+                        c++;
+                }
+                    
+                coord = kvp.Value;
+                if(proverca(c, coord, x, y))
+                    grid_2[(x, y)] = true;
+
+            }
+            else if (y>height/2)
+            {
+                int c = 0;
+                bool coord;
+
+                if (x < -width/2)
+                {
+                    if (grid.ContainsKey((x, y-1)))
+                        c++;
+                    if (grid.ContainsKey((x+1, y-1)))
+                        c++;
+                    if (grid.ContainsKey((x+1, y)))
+                        c++;
+                }
+                else if (x > width/2)
+                {
+                    if (grid.ContainsKey((x-1, y-1)))
+                        c++;
+                    if (grid.ContainsKey((x, y-1)))
+                        c++;
+                    if (grid.ContainsKey((x-1, y)))
+                        c++;
+                }
+                else
+                {
+                    if (grid.ContainsKey((x-1, y-1)))
+                        c++;
+                    if (grid.ContainsKey((x, y-1)))
+                        c++;
+                    if (grid.ContainsKey((x+1, y-1)))
+                        c++;
+                    if (grid.ContainsKey((x-1, y)))
+                        c++;
+                    if (grid.ContainsKey((x+1, y)))
+                        c++;
+                }
+
+                coord = kvp.Value;
+                if(proverca(c, coord, x, y))
+                    grid_2[(x, y)] = true;
+            }
+            else
+            {
+                int c = 0;
+                bool coord;
+
+                if (x < -width/2)
+                {
+                    if (grid.ContainsKey((x, y-1)))
+                        c++;
+                    if (grid.ContainsKey((x+1, y-1)))
+                        c++;
+                    if (grid.ContainsKey((x, y+1)))
+                        c++;
+                    if (grid.ContainsKey((x+1, y+1)))
+                        c++;
+                    if (grid.ContainsKey((x+1, y)))
+                        c++;
+                }
+                else if (x > width/2)
+                {
+                    if (grid.ContainsKey((x-1, y-1)))
+                        c++;
+                    if (grid.ContainsKey((x, y-1)))
+                        c++;
+                    if (grid.ContainsKey((x-1, y+1)))
+                        c++;
+                    if (grid.ContainsKey((x, y+1)))
+                        c++;
+                    if (grid.ContainsKey((x-1, y)))
+                        c++;
+                }
+                else
+                {
+                    //Debug.Log("Right");
+                    if (grid.ContainsKey((x-1, y-1)))
+                        c++;
+                    if (grid.ContainsKey((x, y-1)))
+                        c++;
+                    if (grid.ContainsKey((x+1, y-1)))
+                        c++;
+                    if (grid.ContainsKey((x-1, y+1)))
+                        c++;
+                    if (grid.ContainsKey((x, y+1)))
+                        c++;
+                    if (grid.ContainsKey((x+1, y+1)))
+                         c++;
+                    if (grid.ContainsKey((x-1, y)))
+                        c++;
+                    if (grid.ContainsKey((x+1, y)))
+                        c++;
+                }
+
+                //Debug.Log("c: "+c);
+                coord = kvp.Value;
+                if(proverca(c, coord, x, y))
+                    grid_2[(x, y)] = true;
+            }
+        }
+
 
         grid = grid_2;
     }

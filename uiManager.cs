@@ -10,6 +10,8 @@ public class uiManager : MonoBehaviour
     public Text pauseText;
     private bool colorChanged;
     public bool rightClick=false, leftClick=false;
+    public GameObject Square;
+    public main_algorithms algorithm;
 
 
     private void Start(){
@@ -23,7 +25,7 @@ public class uiManager : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0) && !IsPointerOverUIObject())
         {
-            rightClick = true;
+            rightClick=true;
         }
         else if (Input.GetMouseButtonDown(1) && !IsPointerOverUIObject())
         {
@@ -36,6 +38,16 @@ public class uiManager : MonoBehaviour
         else if (Input.GetMouseButtonUp(1))
         {
             leftClick = false;
+        }
+        else if(rightClick){
+            Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            //Debug.Log("mouse: "+mousePos);
+            Vector3Int position = new Vector3Int(Mathf.RoundToInt(mousePos.x),Mathf.RoundToInt(mousePos.y),91);
+            //Debug.Log("pos: "+position);
+            if(!algorithm.gridSquares.ContainsKey((position.x, position.y)))
+            {
+                algorithm.createACell(position.x,position.y,1);
+            }
         }
 
     }

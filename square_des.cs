@@ -7,6 +7,7 @@ public class square_des : MonoBehaviour
     public SpriteRenderer squares;
     public int x_coord=-51, y_coord=-51;
     public uiManager uimanager;
+    public main_algorithms algorithm;
 
     //main_algorit.width
 
@@ -15,19 +16,22 @@ public class square_des : MonoBehaviour
     {
         if (uimanager.leftClick)
         {
-            main_algorithms.grid[x_coord,y_coord]=0;
-            squares.color = Color.white;
-        }
-        else if(uimanager.rightClick)
-        {
-            main_algorithms.grid[x_coord,y_coord]=1;
-            squares.color = Color.black;
+            destroyItself();
         }
     }
 
-    // Update is called once per frame
-    public void changeState(int state)
+
+    public void destroyItself()
     {
-        squares.color = state==1 ? Color.black : Color.white;
+        algorithm.gridSquares.Remove((x_coord, y_coord));
+        algorithm.grid.Remove((x_coord, y_coord));
+        Destroy(gameObject);
+    }
+
+
+    public void destroyItself(int x)
+    {
+        algorithm.gridSquares.Remove((x_coord, y_coord));
+        Destroy(gameObject);
     }
 }
