@@ -19,25 +19,16 @@ public class camera_moves : MonoBehaviour
     private void Update() 
     {
         if(Input.GetKey(KeyCode.D))
-        {
             transform.Translate(new Vector3(1f,0,0)*speed*Time.deltaTime*(camera_.orthographicSize/10));
-        }
 
         if(Input.GetKey(KeyCode.A))
-        {
             transform.Translate(new Vector3(1f,0,0)*-speed*Time.deltaTime*(camera_.orthographicSize/10));
-            //Debug.Log(speed*Time.deltaTime*(movementDivider/(camera_.orthographicSize/100)));
-        }
 
         if(Input.GetKey(KeyCode.S))
-        {
             transform.Translate(new Vector3(0,1f,0)*-speed*Time.deltaTime*(camera_.orthographicSize/10));
-        }
 
         if(Input.GetKey(KeyCode.W))
-        {
             transform.Translate(new Vector3(0,1f,0)*speed*Time.deltaTime*(camera_.orthographicSize/10));
-        }
 
 
         if (Input.mouseScrollDelta.y != 0)

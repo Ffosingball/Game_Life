@@ -7,7 +7,7 @@ using UnityEngine.EventSystems;
 public class uiManager : MonoBehaviour
 {
     public Button pauseButton;
-    public Text pauseText;
+    public Text pauseText, xText, yText;
     private bool colorChanged;
     public bool rightClick=false, leftClick=false;
     public GameObject Square;
@@ -23,30 +23,31 @@ public class uiManager : MonoBehaviour
 
     public void Update()
     {
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        //Debug.Log("mouse: "+mousePos);
+        Vector3Int position = new Vector3Int(Mathf.RoundToInt(mousePos.x),Mathf.RoundToInt(mousePos.y),91);
+        xText.text="x: "+position.x;
+        yText.text="y: "+position.y;
+
         if (Input.GetMouseButtonDown(0) && !IsPointerOverUIObject())
-        {
             rightClick=true;
-        }
         else if (Input.GetMouseButtonDown(1) && !IsPointerOverUIObject())
-        {
             leftClick = true;
-        }
         else if (Input.GetMouseButtonUp(0))
-        {
             rightClick = false;
-        }
         else if (Input.GetMouseButtonUp(1))
-        {
             leftClick = false;
-        }
         else if(rightClick){
-            Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            //Debug.Log("mouse: "+mousePos);
-            Vector3Int position = new Vector3Int(Mathf.RoundToInt(mousePos.x),Mathf.RoundToInt(mousePos.y),91);
-            //Debug.Log("pos: "+position);
-            if(!algorithm.gridSquares.ContainsKey((position.x, position.y)))
+            if(position.x<(algorithm.width/2) && position.x>(-algorithm.width/2) && position.y<(algorithm.height/2) && position.y>(-algorithm.height/2))
             {
-                algorithm.createACell(position.x,position.y,1);
+                if(!algorithm.grid.ContainsKey((position.x, position.y)))
+                    algorithm.createACell(position.x,position.y,1);
+            }
+        }
+        else if(leftClick){
+            if(algorithm.grid.ContainsKey((position.x, position.y)))
+            {
+                algorithm.deleteCell(position.x,position.y,1);
             }
         }
 
