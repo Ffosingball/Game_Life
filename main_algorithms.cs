@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 
 public class main_algorithms : MonoBehaviour
@@ -11,6 +12,15 @@ public class main_algorithms : MonoBehaviour
     public Dictionary<(int,int),GameObject> grid;
     private static bool Cont_inue = false;
     public uiManager uimanager;
+    public float speed=10, maxspeed=100, minspeed=1;
+    private int generation=0;
+    public Button[] otherButtonsToDisable;
+    public Text speedText;
+
+
+    public int getGeneration(){
+        return generation;
+    }
 
 
     void Awake(){
@@ -74,6 +84,7 @@ public class main_algorithms : MonoBehaviour
 
     public void NextStep()
     {
+        generation++;
         Dictionary<(int,int),GameObject> grid_2 = new Dictionary<(int,int),GameObject>();
         Dictionary<(int,int),GameObject> grid_neighbours = new Dictionary<(int,int),GameObject>();
         //Debug.Log("Step");
@@ -173,7 +184,7 @@ public class main_algorithms : MonoBehaviour
     {
         while(Cont_inue)
         {
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(1/speed);
             NextStep();
         }
     }
@@ -183,11 +194,47 @@ public class main_algorithms : MonoBehaviour
     public void click_button()
     {
         if (Cont_inue)
+        {
             Cont_inue = false;
+            foreach(Button b in otherButtonsToDisable){
+                b.interactable = true;
+            }
+        }
         else
         {
             Cont_inue = true;
+
+            foreach(Button b in otherButtonsToDisable){
+                b.interactable = false;
+            }
+
             StartCoroutine(Calculate());
         }
+    }
+
+
+    public void increaseSpeed(){
+        if(Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+            speed+=10;
+        else
+            speed++;
+
+        if(speed>maxspeed)
+            speed=maxspeed;
+        
+        speedText.text = speed+" generations per second";
+    }
+
+
+    public void decreaseSpeed(){
+        if(Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+            speed-=10;
+        else
+            speed--;
+        
+        if(speed<minspeed)
+            speed=minspeed;
+        
+        speedText.text = speed+" generations per second";
     }
 }

@@ -6,8 +6,8 @@ using UnityEngine.EventSystems;
 
 public class uiManager : MonoBehaviour
 {
-    public Button pauseButton;
-    public Text pauseText, xText, yText;
+    public Button pauseButton, oneStepButton;
+    public Text pauseText, xText, yText, genText;
     private bool colorChanged;
     public bool rightClick=false, leftClick=false;
     public GameObject Square;
@@ -28,6 +28,7 @@ public class uiManager : MonoBehaviour
         Vector3Int position = new Vector3Int(Mathf.RoundToInt(mousePos.x),Mathf.RoundToInt(mousePos.y),91);
         xText.text="x: "+position.x;
         yText.text="y: "+position.y;
+        genText.text = "generation: "+algorithm.getGeneration();
 
         if (Input.GetMouseButtonDown(0) && !IsPointerOverUIObject())
             rightClick=true;
@@ -81,5 +82,12 @@ public class uiManager : MonoBehaviour
             return true;
 
         return false;
+    }
+
+
+    public void makeOneStep(){
+        oneStepButton.interactable = false;
+        algorithm.NextStep();
+        oneStepButton.interactable = true;
     }
 }
